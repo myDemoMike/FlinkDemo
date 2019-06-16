@@ -1,8 +1,7 @@
-package com.my.base.demo
+package com.my.base.table
 
-import org.apache.flink.api.scala.ExecutionEnvironment
+import org.apache.flink.api.scala.{ExecutionEnvironment, _}
 import org.apache.flink.table.api.TableEnvironment
-import org.apache.flink.api.scala._
 import org.apache.flink.table.api.scala._
 
 

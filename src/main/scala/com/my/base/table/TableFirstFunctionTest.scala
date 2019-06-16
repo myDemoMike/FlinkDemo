@@ -1,4 +1,4 @@
-package com.my.base.demo
+package com.my.base.table
 
 import org.apache.flink.api.scala._
 import org.apache.flink.table.api.TableEnvironment

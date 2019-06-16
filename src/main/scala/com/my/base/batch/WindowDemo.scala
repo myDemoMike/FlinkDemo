@@ -1,8 +1,7 @@
-package com.my.base
+package com.my.base.batch
 
 import org.apache.flink.api.scala._
 import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
-import org.apache.flink.streaming.api.windowing.assigners.ProcessingTimeSessionWindows
 import org.apache.flink.streaming.api.windowing.time.Time
 
 object WindowDemo {
