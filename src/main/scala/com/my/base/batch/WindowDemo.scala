@@ -6,10 +6,6 @@ import org.apache.flink.streaming.api.windowing.time.Time
 
 object WindowDemo {
 
-  private val ZOOKEEPER_HOST = "10.31.1.122:2181"
-  private val KAFKA_BROKER = "10.31.1.122:9092"
-  private val TRANSACTION_GROUP = "test"
-
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     val stream = env.socketTextStream("192.168.72.140", 9999)
