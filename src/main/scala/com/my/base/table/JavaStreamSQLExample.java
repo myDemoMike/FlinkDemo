@@ -12,7 +12,7 @@ import java.util.Arrays;
  * @author xiaohui
  * @data 2019/2/27 18:21
  */
-public class StreamSQLExample {
+public class JavaStreamSQLExample {
 
     // *************************************************************************
     //     PROGRAM
