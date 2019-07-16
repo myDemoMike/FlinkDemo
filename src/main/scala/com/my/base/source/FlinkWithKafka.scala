@@ -22,8 +22,12 @@ object FlinkWithKafka {
       // configure Kafka consumer
       val kafkaProps = new Properties()
       kafkaProps.setProperty("zookeeper.connect", ZOOKEEPER_HOST)
+      kafkaProps.setProperty("group.id", "consumer-group")
       kafkaProps.setProperty("bootstrap.servers", KAFKA_BROKER)
       kafkaProps.setProperty("group.id", TRANSACTION_GROUP)
+      kafkaProps.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
+      kafkaProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
+      kafkaProps.setProperty("auto.offset.reset", "latest")
 
       //topicd的名字是test，schema默认使用SimpleStringSchema()即可
       val myConsumer = new FlinkKafkaConsumer[String]("test", new SimpleStringSchema(), kafkaProps)

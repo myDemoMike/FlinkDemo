@@ -23,26 +23,26 @@ import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.streaming.api.scala._
 
 /**
- * Implements the "WordCount" program that computes a simple word occurrence
- * histogram over text files in a streaming fashion.
- *
- * The input is a plain text file with lines separated by newline characters.
- *
- * Usage:
- * {{{
- * WordCount --input <path> --output <path>
- * }}}
- *
- * If no parameters are provided, the program is run with default data from
- * {@link WordCountData}.
- *
- * This example shows how to:
- *
- *  - write a simple Flink Streaming program,
- *  - use tuple data types,
- *  - write and use transformation functions.
- *
- */
+  * Implements the "WordCount" program that computes a simple word occurrence
+  * histogram over text files in a streaming fashion.
+  *
+  * The input is a plain text file with lines separated by newline characters.
+  *
+  * Usage:
+  * {{{
+  * WordCount --input <path> --output <path>
+  * }}}
+  *
+  * If no parameters are provided, the program is run with default data from
+  * {@link WordCountData}.
+  *
+  * This example shows how to:
+  *
+  *  - write a simple Flink Streaming program,
+  *  - use tuple data types,
+  *  - write and use transformation functions.
+  *
+  */
 object WordCount {
 
   def main(args: Array[String]) {
@@ -59,14 +59,14 @@ object WordCount {
     // get input data
     val text =
     // read the text file from given input path
-    if (params.has("input")) {
-      env.readTextFile(params.get("input"))
-    } else {
-      println("Executing WordCount example with default inputs data set.")
-      println("Use --input to specify file input.")
-      // get default test text data
-      env.fromElements(WordCountData.WORDS: _*)
-    }
+      if (params.has("input")) {
+        env.readTextFile(params.get("input"))
+      } else {
+        println("Executing WordCount example with default inputs data set.")
+        println("Use --input to specify file input.")
+        // get default test text data
+        env.fromElements(WordCountData.WORDS: _*)
+      }
 
     val counts: DataStream[(String, Int)] = text
       // split up the lines in pairs (2-tuples) containing: (word,1)

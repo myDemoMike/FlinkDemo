@@ -15,7 +15,6 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <encoding>UTF-8</encoding>
-        <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
         <hadoop.version>2.6.0</hadoop.version>
         <flink.version>1.7.2</flink.version>
@@ -23,38 +22,79 @@
     </properties>
 
     <dependencies>
-       <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-scala_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-scala -->
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
         </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.scala-lang</groupId>-->
+        <!--<artifactId>scala-library</artifactId>-->
+        <!--<version>${scala.version}</version>-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-table_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
+        <groupId>org.apache.flink</groupId>
+        <artifactId>flink-table_${scala.binary.version}</artifactId>
+        <version>${flink.version}</version>
         </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.apache.flink</groupId>-->
+        <!--<artifactId>flink-jdbc_${scala.binary.version}</artifactId>-->
+        <!--<version>${flink.version}</version>-->
+        <!--</dependency>-->
+        <!--&lt;!&ndash; 连接kafka &ndash;&gt;-->
         <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-jdbc_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
-        <!-- 连接kafka -->
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
+        <groupId>org.apache.flink</groupId>
+        <artifactId>flink-connector-kafka_${scala.binary.version}</artifactId>
+        <version>${flink.version}</version>
         </dependency>
     </dependencies>
     <build>
+        <finalName>FlinkDemo</finalName>
+        <plugins>
+            <!-- 该插件用于将Scala代码编译成class文件 -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.2</version>
+                <executions>
+                    <execution>
+                        <id>compile-scala</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile-scala</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scalaVersion>2.11.8</scalaVersion>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

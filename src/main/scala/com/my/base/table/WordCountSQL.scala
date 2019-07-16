@@ -39,13 +39,11 @@ object ExplainSQL {
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     val tEnv = TableEnvironment.getTableEnvironment(env)
-
     val table1 = env.fromElements((1, "hello")).toTable(tEnv, 'count, 'word)
     val table2 = env.fromElements((1, "hello")).toTable(tEnv, 'count, 'word)
     val table = table1
       .where('word.like("F%"))
       .unionAll(table2)
-
     val explanation: String = tEnv.explain(table)
     println(explanation)
   }
@@ -53,7 +51,6 @@ object ExplainSQL {
   // *************************************************************************
   //     USER DATA TYPES
   // *************************************************************************
-
   case class WC(word: String, frequency: Long)
 
 }
