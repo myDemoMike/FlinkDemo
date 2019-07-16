@@ -2,20 +2,14 @@ package com.my.base.source
 
 import java.util.Properties
 
-import org.apache.flink.api.common.functions.RuntimeContext
 import org.apache.flink.api.common.serialization.SimpleStringSchema
-import org.apache.flink.streaming.api.{CheckpointingMode, TimeCharacteristic}
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.connectors.elasticsearch.{ElasticsearchSinkFunction, RequestIndexer}
-import org.apache.flink.streaming.connectors.elasticsearch6.ElasticsearchSink
-import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaConsumer011, FlinkKafkaProducer011}
-import org.apache.flink.streaming.connectors.redis.RedisSink
-import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisPoolConfig
+import org.apache.flink.streaming.api.{CheckpointingMode, TimeCharacteristic}
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer011
 import org.apache.flink.streaming.connectors.redis.common.mapper.{RedisCommand, RedisCommandDescription, RedisMapper}
-import org.apache.http.HttpHost
-import org.elasticsearch.client.{Request, Requests}
+
 /**
   * @Author: Yuan Liu
   * @Description:
@@ -25,12 +19,12 @@ import org.elasticsearch.client.{Request, Requests}
   */
 
 // 定义一个数据样例类，传感器id，采集时间戳，传感器温度
-case class SensorReading( id: String, timestamp: Long, temperature: Double )
+case class SensorReading(id: String, timestamp: Long, temperature: Double)
 
-class MyRedisMapper extends RedisMapper[SensorReading]{
+class MyRedisMapper extends RedisMapper[SensorReading] {
   override def getCommandDescription: RedisCommandDescription = {
     // 定义保存到redis时的命令, hset sensor_temp sensor_id temperature
-    new RedisCommandDescription( RedisCommand.HSET, "sensor_temp" )
+    new RedisCommandDescription(RedisCommand.HSET, "sensor_temp")
   }
 
   override def getValueFromData(t: SensorReading): String = t.temperature.toString
@@ -102,30 +96,30 @@ object FlinkResource {
     //      .reduce( (x, y) => SensorReading( x.id, x.timestamp.min(y.timestamp) + 5, x.temperature + y.temperature ) )
 
     // 根据温度高低拆分流
-    val splitStream = dataStream.split( data => {
-      if( data.temperature > 30 ) Seq("high") else Seq("low")
-    } )
+    val splitStream = dataStream.split(data => {
+      if (data.temperature > 30) Seq("high") else Seq("low")
+    })
 
     val high = splitStream.select("high")
     val low = splitStream.select("low")
     val all = splitStream.select("high", "low")
 
-    val warning = high.map( data => ( data.id, data.temperature ) )
+    val warning = high.map(data => (data.id, data.temperature))
     val connected = warning.connect(low)
 
     val coMapStream = connected.map(
-      warningData => ( warningData._1, warningData._2, "warning" ),
-      lowData => ( lowData.id, "healthy" )
+      warningData => (warningData._1, warningData._2, "warning"),
+      lowData => (lowData.id, "healthy")
     )
 
-    val union = high.union(low, all, high).map(data=>data.toString)
+    val union = high.union(low, all, high).map(data => data.toString)
 
     // 统计每个传感器每3个数据里的最小温度
-    val minTempPerWindow = dataStream.map( data=>(data.id, data.temperature) )
+    val minTempPerWindow = dataStream.map(data => (data.id, data.temperature))
       .keyBy(_._1)
       .timeWindow(Time.seconds(15), Time.seconds(5))
       //      .countWindow(3, 1)
-      .reduce( (data1, data2) => ( data1._1, data1._2.min(data2._2) ) )
+      .reduce((data1, data2) => (data1._1, data1._2.min(data2._2)))
 
     minTempPerWindow.print().setParallelism(1)
 

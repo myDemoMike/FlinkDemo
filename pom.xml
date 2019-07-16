@@ -6,7 +6,11 @@
 
     <groupId>com.my.base</groupId>
     <artifactId>FlinkDemo</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>HotItemsAnalysis</module>
+    </modules>
 
     <name>FlinkDemo</name>
     <url>http://www.example.com</url>
