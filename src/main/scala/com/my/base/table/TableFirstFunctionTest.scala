@@ -6,7 +6,7 @@ import org.apache.flink.table.api.scala._
 
 /**
   * 包: com.kamluen.flink.scala
-  * 开发者: wing
+  * 开发者: yuan
   * 开发时间: 2019-02-23
   * 功能：
   */

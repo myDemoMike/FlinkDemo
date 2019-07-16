@@ -1,27 +1,8 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package com.my.base.wc
 
-package com.my.base.streaming
-
-import com.my.base.util.WordCountData
 import org.apache.flink.api.java.utils.ParameterTool
-import org.apache.flink.streaming.api.scala._
-
+import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment}
+import org.apache.flink.api.scala._
 /**
   * Implements the "WordCount" program that computes a simple word occurrence
   * histogram over text files in a streaming fashion.
@@ -62,12 +43,11 @@ object WordCount {
       if (params.has("input")) {
         env.readTextFile(params.get("input"))
       } else {
-        println("Executing WordCount example with default inputs data set.")
-        println("Use --input to specify file input.")
-        // get default test text data
-        env.fromElements(WordCountData.WORDS: _*)
+        val inputPath = "D:\\Projects\\BigData\\FlinkDemo\\src\\main\\resources\\hello.txt"
+        env.readTextFile(inputPath)
+        // env.fromElements(WordCountData.WORDS: _*)
       }
-
+    // groupBy 与 keyBy
     val counts: DataStream[(String, Int)] = text
       // split up the lines in pairs (2-tuples) containing: (word,1)
       .flatMap(_.toLowerCase.split("\\W+"))
@@ -76,7 +56,6 @@ object WordCount {
       // group by the tuple field "0" and sum up tuple field "1"
       .keyBy(0)
       .sum(1)
-
     // emit result
     if (params.has("output")) {
       counts.writeAsText(params.get("output"))
