@@ -2,76 +2,53 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>FlinkDemo</artifactId>
+        <groupId>com.my.base</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.my.base</groupId>
-    <artifactId>FlinkDemo</artifactId>
-    <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
-    <modules>
-        <module>HotItemsAnalysis</module>
-        <module>FlinkExample</module>
-    </modules>
+    <artifactId>FlinkExample</artifactId>
 
-    <name>FlinkDemo</name>
+    <name>FlinkExample</name>
+    <!-- FIXME change it to the project's website -->
     <url>http://www.example.com</url>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <encoding>UTF-8</encoding>
-        <scala.binary.version>2.11</scala.binary.version>
-        <hadoop.version>2.6.0</hadoop.version>
-        <flink.version>1.7.2</flink.version>
-        <kafka.version>2.2.0</kafka.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
+    <dependencies>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-scala_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-streaming-scala -->
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-table_${scala.binary.version}</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-kafka-0.11_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.bahir</groupId>
             <artifactId>flink-connector-redis_${scala.binary.version}</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-elasticsearch6_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.scala-lang</groupId>-->
-        <!--<artifactId>scala-library</artifactId>-->
-        <!--<version>${scala.version}</version>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>org.apache.flink</groupId>
-            <artifactId>flink-table_${scala.binary.version}</artifactId>
-            <version>${flink.version}</version>
-        </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.apache.flink</groupId>-->
-        <!--<artifactId>flink-jdbc_${scala.binary.version}</artifactId>-->
-        <!--<version>${flink.version}</version>-->
-        <!--</dependency>-->
-        <!--&lt;!&ndash; 连接kafka &ndash;&gt;-->
-        </dependencies>
-    </dependencyManagement>
+
+    </dependencies>
+
     <build>
         <finalName>FlinkDemo</finalName>
         <plugins>

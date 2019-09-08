@@ -58,7 +58,7 @@ object WordCount {
       .sum(1)
     // emit result
     if (params.has("output")) {
-      counts.writeAsText(params.get("output"))
+      counts.writeAsCsv(params.get("output")).setParallelism(1)
     } else {
       println("Printing result to stdout. Use --output to specify output path.")
       counts.print()
