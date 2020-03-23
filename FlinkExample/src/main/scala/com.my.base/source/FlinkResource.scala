@@ -3,6 +3,7 @@ package com.my.base.source
 import java.util.Properties
 
 import org.apache.flink.api.common.serialization.SimpleStringSchema
+import org.apache.flink.streaming.api.environment.CheckpointConfig.ExternalizedCheckpointCleanup
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
@@ -43,8 +44,26 @@ object FlinkResource {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
     //    env.getConfig.setAutoWatermarkInterval(5000)
+    // Checkpoint 开启和时间间隔指定：
     env.enableCheckpointing(1000)
+    // Checkpoint 超时时间，默认为10分钟
+    env.getCheckpointConfig.setCheckpointTimeout(50000)
+    // 检查点之间最小时间间隔
     env.getCheckpointConfig.setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE)
+    //env.getCheckpointConfig.setCheckpointingMode(CheckpointingMode.AT_LEAST_ONCE)
+    // Checkpoint 超时时间：
+    env.getCheckpointConfig.setCheckpointTimeout(50000)
+    // 检查点之间最小时间间隔
+    env.getCheckpointConfig.setMinPauseBetweenCheckpoints(600)
+    // 最大并行执行的检查点数量
+    env.getCheckpointConfig.setMaxConcurrentCheckpoints(1)
+    // 是否删除Checkpoint 中保存的数据：
+    //删除
+    env.getCheckpointConfig.enableExternalizedCheckpoints(ExternalizedCheckpointCleanup.DELETE_ON_CANCELLATION)
+    //保留
+    env.getCheckpointConfig.enableExternalizedCheckpoints(ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION)
+    // 设置可以容忍的检查的失败数，超过这个数量则系统自动关闭和停止任务。
+    env.getCheckpointConfig.setTolerableCheckpointFailureNumber(1)
 
 
     // 2. Source
@@ -57,7 +76,6 @@ object FlinkResource {
         SensorReading("sensor_10", 1547718205, 38.101067604893444)
       ))
     stream1.print("stream1:").setParallelism(1)
-
     // Source2: 从文件读取
     val stream2 = env.readTextFile("D:\\Projects\\BigData\\FlinkTutorial\\src\\main\\resources\\sensor.txt")
     stream2.print("stream2:").setParallelism(1)

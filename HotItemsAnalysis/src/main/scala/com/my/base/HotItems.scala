@@ -18,44 +18,50 @@ import scala.collection.mutable.ListBuffer
 /**
   * @Author: Yuan Liu
   * @Description:
-  *            热门实时商品统计
-  *             统计近1小时内的热门商品，每5分钟更新一次。热门度用浏览次数来衡量
+  * 热门实时商品统计
+  * 统计近1小时内的热门商品，每5分钟更新一次。热门度用浏览次数来衡量
   * @Date: Created in 23:41 2019/7/16
   *
   *        Good Good Study Day Day Up
   */
 
 // https://ververica.cn/developers/computing-real-time-hot-goods/
-case class UserBehavior( userId: Long, itemId: Long, categoryId: Int, behavior: String, timestamp: Long )
+case class UserBehavior(userId: Long, itemId: Long, categoryId: Int, behavior: String, timestamp: Long)
 
 // 中间聚合结果样例类
-case class ItemViewCount( itemId: Long, windowEnd: Long, count: Long )
+case class ItemViewCount(itemId: Long, windowEnd: Long, count: Long)
 
 object HotItems {
   def main(args: Array[String]): Unit = {
     // 创建执行环境
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
-    // 指定Time类型为EventTime
+    // 默认使用ProcessingTime处理数据。大多数会使用EventTime,指定Time类型为EventTime
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
     // 读取数据流进行处理
-    val dataStream = env.readTextFile("E:\\workspace\\FlinkDemo\\HotItemsAnalysis\\src\\main\\resources\\UserBehavior.csv")
-      .map( line => {
+    env.readTextFile("E:\\workspace\\FlinkDemo\\HotItemsAnalysis\\src\\main\\resources\\UserBehavior.csv")
+      .map(line => {
         val lineArray = line.split(",")
-        UserBehavior( lineArray(0).trim.toLong, lineArray(1).trim.toLong, lineArray(2).trim.toInt, lineArray(3).trim, lineArray(4).trim.toLong  )
-      } )
-//      .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[UserBehavior](Time.milliseconds(1000)) {
-//        override def extractTimestamp(element: UserBehavior): Long = element.timestamp * 1000
-//      })
-      .assignAscendingTimestamps( _.timestamp * 1000 )
-      .filter(_.behavior == "pv")   // 过滤出点击浏览事件
-      .keyBy(_.itemId)    // 按照itemId分区
-//        .window( SlidingEventTimeWindows.of(Time.minutes(60), Time.minutes(5)) )
-      .timeWindow( Time.minutes(60), Time.minutes(5) )    // 开时间窗口，滑动窗口
-      .aggregate( new CountAgg(), new WindowResultFunction() )
+        UserBehavior(lineArray(0).trim.toLong, lineArray(1).trim.toLong, lineArray(2).trim.toInt, lineArray(3).trim, lineArray(4).trim.toLong)
+      })
+      // 如果是乱序的 使用 assignTimestampsAndWatermarks  延迟时间1s
+      //      .assignTimestampsAndWatermarks(new BoundedOutOfOrdernessTimestampExtractor[UserBehavior](Time.milliseconds(1000)) {
+      //        override def extractTimestamp(element: UserBehavior): Long = element.timestamp * 1000
+      //      })
+      // assignAscendingTimestamps 升序的时间戳
+      // 指定时间戳和watermark   单位为毫秒
+      .assignAscendingTimestamps(_.timestamp * 1000)
+      .filter(_.behavior == "pv") // 过滤出点击浏览事件
+      .keyBy(_.itemId) // 按照itemId分区
+      //        .window( SlidingEventTimeWindows.of(Time.minutes(60), Time.minutes(5)) )
+      // slide 滑动
+      .timeWindow(Time.minutes(60), Time.minutes(5)) // 开时间窗口，滑动窗口
+      // 定义窗口聚合规则(来一条数据就加1)   定义输出数据结构
+      .aggregate(new CountAgg(), new WindowResultFunction())
+      // 每一个商品对应的数据变成一个流
       .keyBy(_.windowEnd)
-      .process( new TopNHotItems(3) )
+      .process(new TopNHotItems(3))
       .print("items")
 
     // 调用execute()执行任务
@@ -64,7 +70,8 @@ object HotItems {
 }
 
 // 预聚合操作，来一条数据就计数器加1
-class CountAgg() extends AggregateFunction[UserBehavior, Long, Long]{
+class CountAgg() extends AggregateFunction[UserBehavior, Long, Long] {
+
   override def add(value: UserBehavior, accumulator: Long): Long = accumulator + 1
 
   override def createAccumulator(): Long = 0L
@@ -75,7 +82,7 @@ class CountAgg() extends AggregateFunction[UserBehavior, Long, Long]{
 }
 
 // 窗口关闭时的操作，包装成ItemViewCount
-class WindowResultFunction() extends WindowFunction[Long, ItemViewCount, Long, TimeWindow]{
+class WindowResultFunction() extends WindowFunction[Long, ItemViewCount, Long, TimeWindow] {
   override def apply(key: Long, window: TimeWindow, input: Iterable[Long], out: Collector[ItemViewCount]): Unit = {
     val itemId: Long = key
     val windowEnd = window.getEnd
@@ -84,14 +91,14 @@ class WindowResultFunction() extends WindowFunction[Long, ItemViewCount, Long, T
   }
 }
 
-class TopNHotItems(size: Int) extends KeyedProcessFunction[Long, ItemViewCount, String]{
+class TopNHotItems(size: Int) extends KeyedProcessFunction[Long, ItemViewCount, String] {
 
   private var itemState: ListState[ItemViewCount] = _
 
   override def open(parameters: Configuration): Unit = {
     super.open(parameters)
     // 获取当前运行环境中的 ListState，用来回复itemState
-    val itemStateDesc = new ListStateDescriptor[ItemViewCount]( "item-state", classOf[ItemViewCount] )
+    val itemStateDesc = new ListStateDescriptor[ItemViewCount]("item-state", classOf[ItemViewCount])
     itemState = getRuntimeContext.getListState(itemStateDesc)
   }
 
@@ -99,7 +106,7 @@ class TopNHotItems(size: Int) extends KeyedProcessFunction[Long, ItemViewCount, 
     // 每条数据都暂存入liststate
     itemState.add(value)
     // 注册一个定时器，延迟触发
-    ctx.timerService().registerEventTimeTimer( value.windowEnd + 100 )
+    ctx.timerService().registerEventTimeTimer(value.windowEnd + 100)
   }
 
   // 核心处理流程，定时器触发时进行操作，可以认为之前的数据都已经到达
@@ -107,7 +114,7 @@ class TopNHotItems(size: Int) extends KeyedProcessFunction[Long, ItemViewCount, 
     val allItems: ListBuffer[ItemViewCount] = ListBuffer()
 
     import scala.collection.JavaConversions._
-    for( item <- itemState.get() ){
+    for (item <- itemState.get()) {
       allItems += item
     }
     // 提前清除状态数据
@@ -121,10 +128,10 @@ class TopNHotItems(size: Int) extends KeyedProcessFunction[Long, ItemViewCount, 
     result.append("====================================\n")
     result.append("时间：").append(new Timestamp(timestamp - 100)).append("\n")
 
-    for( i <- 0 until sortedItems.length ){
+    for (i <- 0 until sortedItems.length) {
       val currentItem = sortedItems(i)
       // 输出格式： NO, ID, count
-      result.append("NO").append(i+1).append(":")
+      result.append("NO").append(i + 1).append(":")
         .append(" 商品ID=").append(currentItem.itemId)
         .append(" 浏览量=").append(currentItem.count).append("\n")
     }

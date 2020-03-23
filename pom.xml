@@ -22,7 +22,7 @@
         <encoding>UTF-8</encoding>
         <scala.binary.version>2.11</scala.binary.version>
         <hadoop.version>2.6.0</hadoop.version>
-        <flink.version>1.7.2</flink.version>
+        <flink.version>1.9.1</flink.version>
         <kafka.version>2.2.0</kafka.version>
     </properties>
 
@@ -54,14 +54,19 @@
                 <artifactId>flink-connector-elasticsearch6_${scala.binary.version}</artifactId>
                 <version>${flink.version}</version>
             </dependency>
-            <!--<dependency>-->
-            <!--<groupId>org.scala-lang</groupId>-->
-            <!--<artifactId>scala-library</artifactId>-->
-            <!--<version>${scala.version}</version>-->
-            <!--</dependency>-->
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${flink.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.flink</groupId>
-                <artifactId>flink-table_${scala.binary.version}</artifactId>
+                <artifactId>flink-table-planner_${scala.binary.version}</artifactId>
+                <version>${flink.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-table-api-scala-bridge_${scala.binary.version}</artifactId>
                 <version>${flink.version}</version>
             </dependency>
             <dependency>
@@ -74,12 +79,16 @@
                 <artifactId>flink-cep-scala_${scala.binary.version}</artifactId>
                 <version>${flink.version}</version>
             </dependency>
-            <!--<dependency>-->
-            <!--<groupId>org.apache.flink</groupId>-->
-            <!--<artifactId>flink-jdbc_${scala.binary.version}</artifactId>-->
-            <!--<version>${flink.version}</version>-->
-            <!--</dependency>-->
-            <!--&lt;!&ndash; 连接kafka &ndash;&gt;-->
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-jdbc_${scala.binary.version}</artifactId>
+                <version>${flink.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.flink</groupId>
+                <artifactId>flink-runtime-web_${scala.binary.version}</artifactId>
+                <version>${flink.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>

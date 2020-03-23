@@ -29,16 +29,16 @@ object WordCount {
   def main(args: Array[String]) {
 
     // Checking input parameters
-    val params = ParameterTool.fromArgs(args)
+    val params: ParameterTool = ParameterTool.fromArgs(args)
 
     // set up the execution environment
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
 
     // make parameters available in the web interface
     env.getConfig.setGlobalJobParameters(params)
 
     // get input data
-    val text =
+    val text: DataStream[String] =
     // read the text file from given input path
       if (params.has("input")) {
         env.readTextFile(params.get("input"))

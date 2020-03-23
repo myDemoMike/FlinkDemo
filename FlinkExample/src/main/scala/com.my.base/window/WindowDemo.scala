@@ -9,10 +9,10 @@ import org.apache.flink.streaming.api.windowing.time.Time
   * Flink任务的2种提交方式
   *
   * 1.提交到Flink集群 standalone模式
-  *   ./flink run -c com.my.base.batch.WindowDemo  /home/liuyuan/FlinkDemo-jar-with-dependencies.jar --hostname 10.31.1.123
+  * ./flink run -c com.my.base.batch.WindowDemo  /home/liuyuan/FlinkDemo-jar-with-dependencies.jar --hostname 10.31.1.123
   * 2.提交到Hadoop集群
-  *   1）./yarn-session.sh -n 2 -s 2 -jm 1024 -nm test -d
-  *   2）./flink run -m yarn-cluster  -c com.my.base.batch.WindowDemo  /home/liuyuan/FlinkDemo-jar-with-dependencies.jar --hostname 10.31.1.123
+  * 1）./yarn-session.sh -n 2 -s 2 -jm 1024 -nm test -d
+  * 2）./flink run -m yarn-cluster  -c com.my.base.batch.WindowDemo  /home/liuyuan/FlinkDemo-jar-with-dependencies.jar --hostname 10.31.1.123
   *
   */
 object WindowDemo {
@@ -33,11 +33,9 @@ object WindowDemo {
       _.toLowerCase.split("\\W+") filter {
         _.nonEmpty
       }
-    } //nonEmpty非空的
-      .map {
+    }.map {
       (_, 1)
-    }
-      .keyBy(0) //通过Tuple的第一个元素进行分组
+    }.keyBy(0) //通过Tuple的第一个元素进行分组
       //   每隔2秒中计算最近5秒的数据   等价于  SlidingEventTimeWindows
       .timeWindow(Time.seconds(5), Time.seconds(2))
       .sum(1)
@@ -50,7 +48,7 @@ object WindowDemo {
     //      .sum(1)
 
 
-    // 每隔5秒钟处理前10S的出局
+    // 每隔5秒钟处理前10S的数据
     //    val output = stream.flatMap {
     //      _.toLowerCase.split("\\W+") filter {
     //        _.nonEmpty
