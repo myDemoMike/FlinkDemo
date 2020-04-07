@@ -10,13 +10,14 @@ import org.apache.flink.streaming.api.scala.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.windowing.time.Time
 
 /**
- *
- * @param id 登录日志ID
- * @param userName
- * @param eventType 登录类型：登录失败和登录成功
- * @param eventTime 登录时间 精确到秒
- */
-case class LoginEvent(id:Long,userName:String,eventType:String,eventTime:Long)
+  *
+  * @param id        登录日志ID
+  * @param userName
+  * @param eventType 登录类型：登录失败和登录成功
+  * @param eventTime 登录时间 精确到秒
+  */
+case class LoginEvent(id: Long, userName: String, eventType: String, eventTime: Long)
+
 object TestCepByLogin {
 
   //从一堆的登录日志中，匹配一个恶意登录的模式（如果一个用户连续（在10秒内）失败三次，则是恶意登录），从而找到哪些用户名是恶意登录
@@ -24,7 +25,7 @@ object TestCepByLogin {
     val streamEnv: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
     streamEnv.setParallelism(1)
     import org.apache.flink.streaming.api.scala._
-    streamEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)//设置时间语义
+    streamEnv.setStreamTimeCharacteristic(TimeCharacteristic.EventTime) //设置时间语义
 
     //读取登录日志
     val stream: DataStream[LoginEvent] = streamEnv.fromCollection(List(
@@ -34,7 +35,7 @@ object TestCepByLogin {
       new LoginEvent(4, "李四", "fail", 1577080458),
       new LoginEvent(5, "李四", "success", 1577080462),
       new LoginEvent(6, "张三", "fail", 1577080462)
-    )).assignAscendingTimestamps(_.eventTime*1000L) //指定EventTime的时候必须要确保是时间戳（精确到毫秒）
+    )).assignAscendingTimestamps(_.eventTime * 1000L) //指定EventTime的时候必须要确保是时间戳（精确到毫秒）
 
     //定义模式(Pattern)
     val pattern: Pattern[LoginEvent, LoginEvent] = Pattern.begin[LoginEvent]("start").where(_.eventType.equals("fail"))
@@ -43,7 +44,7 @@ object TestCepByLogin {
       .within(Time.seconds(10)) //时间限制
 
     //检测Pattern
-    val patternStream: PatternStream[LoginEvent] = CEP.pattern(stream.keyBy(_.userName),pattern) //根据用户名分组
+    val patternStream: PatternStream[LoginEvent] = CEP.pattern(stream.keyBy(_.userName), pattern) //根据用户名分组
 
     //选择结果并输出
     val result: DataStream[String] = patternStream.select(new PatternSelectFunction[LoginEvent, String] {

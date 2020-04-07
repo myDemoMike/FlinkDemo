@@ -8,15 +8,16 @@ import org.apache.flink.streaming.api.windowing.time.Time
 
 /**
   * 订单支付实时监控
+  *
   * @param orderId
   * @param eventType
   * @param eventTime
   */
 // 输入订单事件数据流
-case class OrderEvent( orderId: Long, eventType: String, eventTime: Long )
+case class OrderEvent(orderId: Long, eventType: String, eventTime: Long)
 
 // 输出订单处理结果数据流
-case class OrderResult( orderId: Long, resultMsg: String )
+case class OrderResult(orderId: Long, resultMsg: String)
 
 object OrderTimeout {
   def main(args: Array[String]): Unit = {
@@ -45,21 +46,21 @@ object OrderTimeout {
     val orderTimeoutOutputTag = OutputTag[OrderResult]("orderTimeout")
 
     // 将pattern作用到input stream上，得到一个pattern stream
-    val patternStream = CEP.pattern( orderEventStream.keyBy(_.orderId), orderPayPattern )
+    val patternStream = CEP.pattern(orderEventStream.keyBy(_.orderId), orderPayPattern)
 
     import scala.collection.Map
     // 调用select得到最后的复合输出流
     val complexResult: DataStream[OrderResult] = patternStream.select(orderTimeoutOutputTag)(
       // pattern timeout function
-      ( orderPayEvents: Map[String, Iterable[OrderEvent]], timestamp: Long ) => {
+      (orderPayEvents: Map[String, Iterable[OrderEvent]], timestamp: Long) => {
         val timeoutOrderId = orderPayEvents.getOrElse("begin", null).iterator.next().orderId
-        OrderResult( timeoutOrderId, "order time out" )
+        OrderResult(timeoutOrderId, "order time out")
       }
     )(
       // pattern select function
-      ( orderPayEvents: Map[String, Iterable[OrderEvent]]) => {
+      (orderPayEvents: Map[String, Iterable[OrderEvent]]) => {
         val payedOrderId = orderPayEvents.getOrElse("follow", null).iterator.next().orderId
-        OrderResult( payedOrderId, "order payed successfully" )
+        OrderResult(payedOrderId, "order payed successfully")
       }
     )
 
@@ -67,7 +68,7 @@ object OrderTimeout {
     complexResult.print("payed")
 
     // 从复合输出流里拿到侧输出流
-    val timeoutResult = complexResult.getSideOutput( orderTimeoutOutputTag )
+    val timeoutResult = complexResult.getSideOutput(orderTimeoutOutputTag)
     timeoutResult.print("timeout")
 
     env.execute("Order Timeout Detect")
